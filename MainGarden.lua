@@ -1,3 +1,5 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
 -- Main Tab
 local MainTab = Window:CreateTab("🌟 Main", nil)
 
