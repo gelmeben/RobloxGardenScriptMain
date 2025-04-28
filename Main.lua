@@ -533,4 +533,107 @@ MainTab:CreateColorPicker({
         end
     end,
 })
+
+    -- Player Join/Leave Handling
+game.Players.PlayerAdded:Connect(function(player)
+    local connections = {}
+    
+    connections.CharacterAdded = player.CharacterAdded:Connect(function(character)
+        task.wait(0.5)
+        if player and player.Character then
+            applyESPEffects(player)
+        end
+    end)
+    
+    connections.CharacterRemoving = player.CharacterRemoving:Connect(function()
+        cleanupPlayerEffects(player)
+    end)
+    
+    playerConnections[player] = connections
+    
+    if player.Character then
+        task.wait(0.5)
+        applyESPEffects(player)
+    end
+end)
+
+    game.Players.PlayerRemoving:Connect(function(player)
+    if playerConnections[player] then
+        for _, connection in pairs(playerConnections[player]) do
+            connection:Disconnect()
+        end
+        playerConnections[player] = nil
+    end
+    cleanupPlayerEffects(player)
+end)
+
+-- Handle local player respawn
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    if WalkSpeedEnabled then
+        task.wait(0.1)
+        if character and character:FindFirstChild("Humanoid") then
+            character.Humanoid.WalkSpeed = customWalkSpeed
+        end
+    end
+    
+    if NoClipEnabled then
+        task.wait(0.1)
+        toggleNoClip(true)
+    end
+    
+    if FlyEnabled then
+        task.wait(0.5)
+        toggleFly(true)
+    end
+    
+    -- Re-equip crop if needed after respawn
+    if equippedCrop and AutoFeedHungryPlantEnabled then
+        task.wait(0.5)
+        equipGear(equippedCrop.Name)
+    end
+end)
+
+-- Apply effects to existing players on script load
+for _, player in ipairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer and player.Character then
+        applyESPEffects(player)
+    end
+    
+    if not playerConnections[player] then
+        local connections = {}
+        
+        connections.CharacterAdded = player.CharacterAdded:Connect(function(character)
+            task.wait(0.5)
+            if player and player.Character then
+                applyESPEffects(player)
+            end
+        end)
+        
+        connections.CharacterRemoving = player.CharacterRemoving:Connect(function()
+            cleanupPlayerEffects(player)
+        end)
+        
+        playerConnections[player] = connections
+    end
+end
+
+-- ESP Update Loop
+game:GetService("RunService").RenderStepped:Connect(function()
+    if ESPSettings.TwoDBox then
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer then
+                updateFramePosition(player, boxFrames[player])
+            end
+        end
+    end
+    
+    if ESPSettings.Chams then
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer then
+                CheckVisibility(player)
+            end
+        end
+    end
+end)
+
 end
