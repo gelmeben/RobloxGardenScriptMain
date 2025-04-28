@@ -1,4 +1,5 @@
--- Main Tab
+return function(Window)
+    -- Main Tab
 local MainTab = Window:CreateTab("🌟 Main", nil)
 
 -- Movement Section
@@ -532,3 +533,4 @@ MainTab:CreateColorPicker({
         end
     end,
 })
+end    
